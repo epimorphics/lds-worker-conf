@@ -4,7 +4,7 @@
 # Usage: makeImageOnS3 s3folder
 
 [[ $# = 1 ]] || { echo "Usage: makeImageOnS3 s3folder" 1>&2 ; exit 1 ; }
-readonly $s3folder="$1"
+s3folder="$1"
 
 . /opt/dms-worker/conf/scripts/automation_lib.sh
 
