@@ -13,7 +13,7 @@ dump=$( findLastDump "$s3folder" )
 [[ -n $dump ]] || { echo "Could not find S3 dump" 1>&2 ; exit 1 ; }
 
 # Create a working area
-buildir="/tmp/makeImage-$RANDOM"
+buildir="/tmp/makeImage-$( date +%F%T%N )"
 mkdir -p $buildir
 cd $buildir
 
