@@ -18,14 +18,16 @@ mkdir -p $buildir
 cd $buildir
 
 # Fetch the dump
+echo "Fetch dump: $dump"
 aws s3 cp "$dump" dump.nq.gz ||  { echo "Failed to download dump $dump" 1>&2 ; exit 1 ; }
 
 # Build the image
-/opt/jena/bin/tdbloader2 --loc DS-DB
+/opt/jena/bin/tdbloader2 --loc DS-DB dump.nq.gz
 tar czf DS-DB.tgz DS-DB
 
 # Upload the image
 image=$( echo "$dump" | sed -e 's/dump.nq.gz/image.tgz' )
+echo "Uploading built image to: $image"
 aws cp DS-DB.tgz "$image"
 
 cd /tmp
