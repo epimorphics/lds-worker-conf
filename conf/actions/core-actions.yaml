@@ -1,0 +1,12 @@
+"@name" : log
+"@javaclass" : com.epimorphics.dmsworker.actions.LogAction
+---
+"@name"      : notify
+"@javaclass" : com.epimorphics.dmsworker.actions.NotifyAction
+"topicARN"   : "arn:aws:sns:eu-west-1:853478862498:worker_notifications"
+---
+"@name"      : testFile
+"@type"      : script
+"@script"    : "testFile.sh"
+"@args"      : ["messageFile"]
+passByReference : true
