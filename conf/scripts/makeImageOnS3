@@ -1,0 +1,32 @@
+#!/bin/bash
+# Build a TDB images of the most recent dump of a S3-based service
+# The base folder should be the top level folder not including "images"/"updates" and no final "/"
+# Usage: makeImageOnS3 s3folder
+
+[[ $# = 1 ]] || { echo "Usage: makeImageOnS3 s3folder" 1>&2 ; exit 1 ; }
+readonly $s3folder="$1"
+
+. /opt/dms-worker/conf/scripts/automation_lib.sh
+
+# Find the dump to be loaded
+dump=$( findLastDump "$s3folder" )
+[[ -n $dump ]] || { echo "Could not find S3 dump" 1>&2 ; exit 1 ; }
+
+# Create a working area
+buildir="/tmp/makeImage-$RANDOM"
+mkdir -p $buildir
+cd $buildir
+
+# Fetch the dump
+aws s3 cp "$dump" dump.nq.gz ||  { echo "Failed to download dump $dump" 1>&2 ; exit 1 ; }
+
+# Build the image
+/opt/jena/bin/tdbloader2 --loc DS-DB
+tar czf DS-DB.tgz DS-DB
+
+# Upload the image
+image=$( echo "$dump" | sed -e 's/dump.nq.gz/image.tgz' )
+aws cp DS-DB.tgz "$image"
+
+cd /tmp
+rm -r $buildir
