@@ -9,8 +9,18 @@
 "@type"      : script
 "@script"    : "buildLatestImage"
 "@args"      : [ "target" ]
+"@onError" :
+    "@javaclass" : com.epimorphics.dmsworker.actions.NotifyAction
+    "topicARN"   : "arn:aws:sns:eu-west-1:853478862498:worker_notifications"
+    "target"     : "dms-worker error"
+    "message"    : "Failure in buildLatestImage"
 ---
 "@name"      : rebuildDataTier
 "@type"      : script
 "@script"    : "rebuildDataTier"
 "@args"      : [ "target", "message" ]
+"@onError" :
+    "@javaclass" : com.epimorphics.dmsworker.actions.NotifyAction
+    "topicARN"   : "arn:aws:sns:eu-west-1:853478862498:worker_notifications"
+    "target"     : "dms-worker error"
+    "message"    : "Failure in rebuildDataTier"
