@@ -10,7 +10,7 @@ serverDir=$1
 
 SSH_FLAGS="-q -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 IP=$(jq -r ".address" < $serverDir/config.json)
-FLAGS="$SSH_FLAGS -i /var/opt/dms/.ssh/ld-user.pem"
+FLAGS="$SSH_FLAGS -i /var/opt/dms/.ssh/lds-user.pem"
 
 echo "Calling db_reset on $serverDir"
 ssh -t -t $FLAGS -l ubuntu $IP /bin/bash /usr/local/bin/db_reset

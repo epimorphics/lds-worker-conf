@@ -16,7 +16,7 @@ echo "rebuildDataTier called on $tierDir $s3Folder"
 /opt/dms-worker/conf/scripts/buildLatestImage "$s3Folder"
 
 SSH_FLAGS="-q -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-FLAGS="$SSH_FLAGS -i /var/opt/dms/.ssh/ld-user.pem"
+FLAGS="$SSH_FLAGS -i /var/opt/dms/.ssh/lds-user.pem"
 
 # Scan all the servers in the tier and install
 # TODO handle LB remove/add
