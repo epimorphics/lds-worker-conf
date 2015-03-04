@@ -26,9 +26,9 @@ aws s3 cp "$dump" dump.nq.gz ||  { echo "Failed to download dump $dump" 1>&2 ; e
 tar czf DS-DB.tgz DS-DB ||  { echo "Failed to package image" 1>&2 ; exit 1 ; }
 
 # Upload the image
-image=$( echo "$dump" | sed -e 's/dump.nq.gz/image.tgz' )
+image=$( echo "$dump" | sed -e 's/dump.nq.gz/image.tgz/' )
 echo "Uploading built image to: $image"
-aws cp DS-DB.tgz "$image"  ||  { echo "Failed to upload image" 1>&2 ; exit 1 ; }
+aws s3 cp DS-DB.tgz "$image"  ||  { echo "Failed to upload image" 1>&2 ; exit 1 ; }
 
 cd /tmp
 rm -r $buildir
