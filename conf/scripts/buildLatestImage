@@ -1,9 +1,9 @@
 #!/bin/bash
 # Build a TDB images of the most recent dump of a S3-based service
 # The base folder should be the top level folder not including "images"/"updates" and no final "/"
-# Usage: makeImageOnS3 s3folder
+# Usage: buildLatestImage s3folder
 
-[[ $# = 1 ]] || { echo "Usage: makeImageOnS3 s3folder" 1>&2 ; exit 1 ; }
+[[ $# = 1 ]] || { echo "Usage: buildLatestImage s3folder" 1>&2 ; exit 1 ; }
 s3folder="$1"
 
 . /opt/dms-worker/conf/scripts/automation_lib.sh
@@ -13,7 +13,7 @@ dump=$( findLastDump "$s3folder" )
 [[ -n $dump ]] || { echo "Could not find S3 dump" 1>&2 ; exit 1 ; }
 
 # Create a working area
-buildir="/tmp/makeImage-$( date +%F%T%N )"
+buildir="/tmp/makeImage-$( date +%F%T%N )$RANDOM"
 mkdir -p $buildir
 cd $buildir
 

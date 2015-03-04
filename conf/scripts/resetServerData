@@ -1,0 +1,16 @@
+#!/bin/bash
+# Reset a target dataserver to the latest image/dump plus updates from S3
+# All current data will be lost
+# Usage: resetServerData serverDir
+
+set -o errexit
+
+[[ $# = 1 ]] || { echo "Usage: resetServerData serverDir" 1>&2 ; exit 1 ; }
+serverDir=$1
+
+SSH_FLAGS="-q -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+IP=$(jq -r ".address" < $serverDir/config.json)
+FLAGS="$SSH_FLAGS -i /var/opt/dms/.ssh/ld-user.pem"
+
+echo "Calling db_reset on $serverDir"
+ssh -t -t $FLAGS -l ubuntu $IP /bin/bash /usr/local/bin/db_reset

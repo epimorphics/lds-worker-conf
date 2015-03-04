@@ -1,0 +1,27 @@
+#!/bin/bash
+# Rebuild all data images in a data tier. 
+# First creates a new image from last dump, then installs on all servers.
+# Usage: rebuildDataTier  tierDir
+
+set -o errexit
+
+[[ $# = 1 ]] || { echo "Usage: rebuildDataTier  tierDir" 1>&2 ; exit 1 ; }
+tierDir=$1
+
+# Build a new image to install everywhere
+/opt/dms-worker/conf/scripts/buildLatestImage
+
+SSH_FLAGS="-q -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+FLAGS="$SSH_FLAGS -i /var/opt/dms/.ssh/ld-user.pem"
+
+# Scan all the servers in the tier and install
+# TODO handle LB remove/add
+for server in $tierDir/servers/*
+do
+    if grep -qv Terminated $server/status 
+        then
+        IP=$( jq -r .address "$server/config.json" )
+        echo "Calling db_reset on $server"
+        ssh -t -t $FLAGS -l ubuntu $IP /bin/bash /usr/local/bin/db_reset
+    fi
+done
