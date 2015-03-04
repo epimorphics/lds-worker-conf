@@ -13,7 +13,7 @@ dump=$( findLastDump "$s3folder" )
 [[ -n $dump ]] || { echo "Could not find S3 dump" 1>&2 ; exit 1 ; }
 
 # Create a working area
-buildir="/tmp/makeImage-$( date +%F%T%N )$RANDOM"
+buildir="/var/opt/dms-worker/scratch/makeImage-$( date +%F%T%N )$RANDOM"
 mkdir -p $buildir
 cd $buildir
 
@@ -22,13 +22,13 @@ echo "Fetch dump: $dump"
 aws s3 cp "$dump" dump.nq.gz ||  { echo "Failed to download dump $dump" 1>&2 ; exit 1 ; }
 
 # Build the image
-/opt/jena/bin/tdbloader2 --loc DS-DB dump.nq.gz
-tar czf DS-DB.tgz DS-DB
+/opt/jena/bin/tdbloader2 --loc DS-DB dump.nq.gz ||  { echo "Failed to build image" 1>&2 ; exit 1 ; }
+tar czf DS-DB.tgz DS-DB ||  { echo "Failed to package image" 1>&2 ; exit 1 ; }
 
 # Upload the image
 image=$( echo "$dump" | sed -e 's/dump.nq.gz/image.tgz' )
 echo "Uploading built image to: $image"
-aws cp DS-DB.tgz "$image"
+aws cp DS-DB.tgz "$image"  ||  { echo "Failed to upload image" 1>&2 ; exit 1 ; }
 
 cd /tmp
 rm -r $buildir
