@@ -27,12 +27,12 @@ backupServer() {
     local s3folder="$2"
 
     cd /opt/dms/conf/scripts
-    backupFile=$( ops/backup-server.sh $serverDir | tail -1 )
+    local backupFile=$( ops/backup-server.sh $serverDir | tail -1 )
 
     echo "Publish to S3 images area"
     if [[ $backupFile =~ .*/images/[^-_]+-[^_]+_([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])_([0-9][0-9]-[0-9][0-9]-[0-9][0-9]).nq.gz ]]; then
-        date=${BASH_REMATCH[1]}
-        time=${BASH_REMATCH[2]}
+        local date=${BASH_REMATCH[1]}
+        local time=${BASH_REMATCH[2]}
         aws s3 cp $backupFile $s3folder/images/$date/$time-0000/backupServer_dump.nq.gz
     else
         echo "Badly formed backup file name, omitting S3 publish - $backupFile"
@@ -70,7 +70,7 @@ deleteOldS3Records() {
 findLastDump() {
     [[ $# = 1 ]] || { echo "Internal error calling findLastDump" 1>&2 ; exit 1 ; }
     local s3folder="$1"
-    dump=$( aws s3 ls "$s3folder/images" --recursive | grep dump.nq.gz | tail -1 | awk '{print $4}' )
+    local dump=$( aws s3 ls "$s3folder/images" --recursive | grep dump.nq.gz | tail -1 | awk '{print $4}' )
     if [[ -n $dump ]]; then
         if [[ $s3folder =~ (s3://[^/]*)/.* ]]; then
             echo "${BASH_REMATCH[1]}/$dump"
@@ -80,3 +80,53 @@ findLastDump() {
     return 1
 }
 
+# Remove a server from its LB if any
+# Usage: removeFromLB serverDir
+removeFromLB() {
+    [[ $# = 1 ]] || { echo "Internal error calling removeFromLB" 1>&2 ; exit 1 ; }
+    if [[ -f $serverDir/../../lb-name ]]; then
+        local LBNAME=$(cat $serverDir/../../lb-name)
+        if [[ -f $serverDir/aws-instance.json ]]; then
+            local instanceID=$( jq -r '.Instances[0].InstanceId' < $serverDir/aws-instance.json )
+            echo "Removing from LB: $serverDir"
+            aws elb deregister-instances-from-load-balancer --load-balancer-name $LBNAME --instances $instanceID
+        else 
+            echo "Could not find server instance information at $serverDir" 1>&2
+            return 1
+        fi
+    fi
+}
+
+# Remove a server to its LB if any
+# Usage: addToLB serverDir
+addToLB() {
+    [[ $# = 1 ]] || { echo "Internal error calling addToLB" 1>&2 ; exit 1 ; }
+    if [[ -f $serverDir/../../lb-name ]]; then
+        local LBNAME=$(cat $serverDir/../../lb-name)
+        if [[ -f $serverDir/aws-instance.json ]]; then
+            local instanceID=$( jq -r '.Instances[0].InstanceId' < $serverDir/aws-instance.json )
+            echo "Adding to LB: $serverDir"
+            aws elb register-instances-with-load-balancer --load-balancer-name $LBNAME --instances $instanceID
+        else 
+            echo "Could not find server instance information at $serverDir" 1>&2
+            return 1
+        fi
+    fi
+}
+
+# Run a command on each active server in a tierDir, removing from and LB as we go
+# The command should take one argument which is the server directroy
+# Usage: applyToTier tierDir command
+applyToTier() {
+    [[ $# = 2 ]] || { echo "Internal error calling applyToTier" 1>&2 ; exit 1 ; }
+    local tierDir="$1"
+    local command="$2"
+    for server in $tierDir/servers/*
+    do
+        if grep -qv Terminated $server/status ; then
+            removeFromLB $server
+            $command $server
+            addToLB $server
+        fi
+    done
+}

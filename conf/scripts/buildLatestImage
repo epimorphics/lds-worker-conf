@@ -6,11 +6,18 @@
 [[ $# = 1 ]] || { echo "Usage: buildLatestImage s3folder" 1>&2 ; exit 1 ; }
 s3folder="$1"
 
-. /opt/dms-worker/conf/scripts/automation_lib.sh
+SCRIPTBASE=/opt/dms-worker/conf/scripts
+. $SCRIPTBASE/automation_lib.sh
 
 # Find the dump to be loaded
 dump=$( findLastDump "$s3folder" )
 [[ -n $dump ]] || { echo "Could not find S3 dump" 1>&2 ; exit 1 ; }
+image=$( echo "$dump" | sed -e 's/dump.nq.gz/image.tgz/' )
+
+if [[ -n $(aws s3 ls "$image") ]]; then
+    echo "Image already exists, not updating"
+    exit 0
+fi
 
 # Create a working area
 buildir="/var/opt/dms-worker/scratch/makeImage-$( date +%F%T%N )$RANDOM"
@@ -26,7 +33,6 @@ aws s3 cp "$dump" dump.nq.gz ||  { echo "Failed to download dump $dump" 1>&2 ; e
 tar czf DS-DB.tgz DS-DB ||  { echo "Failed to package image" 1>&2 ; exit 1 ; }
 
 # Upload the image
-image=$( echo "$dump" | sed -e 's/dump.nq.gz/image.tgz/' )
 echo "Uploading built image to: $image"
 aws s3 cp DS-DB.tgz "$image"  ||  { echo "Failed to upload image" 1>&2 ; exit 1 ; }
 
