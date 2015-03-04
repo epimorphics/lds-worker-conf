@@ -5,8 +5,12 @@
 "@javaclass" : com.epimorphics.dmsworker.actions.NotifyAction
 "topicARN"   : "arn:aws:sns:eu-west-1:853478862498:worker_notifications"
 ---
-"@name"      : testFile
+"@name"      : buildLatestImage
 "@type"      : script
-"@script"    : "testFile.sh"
-"@args"      : ["messageFile"]
-passByReference : true
+"@script"    : "buildLatestImage"
+"@args"      : [ "target" ]
+---
+"@name"      : rebuildDataTier
+"@type"      : script
+"@script"    : "rebuildDataTier"
+"@args"      : [ "target", "message" ]

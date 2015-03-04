@@ -1,15 +1,19 @@
 #!/bin/bash
 # Rebuild all data images in a data tier. 
 # First creates a new image from last dump, then installs on all servers.
-# Usage: rebuildDataTier  tierDir
+# Usage: rebuildDataTier tierDir s3Folder
 
 set -o errexit
 
-[[ $# = 1 ]] || { echo "Usage: rebuildDataTier  tierDir" 1>&2 ; exit 1 ; }
-tierDir=$1
+[[ $# = 2 ]] || { echo "Usage: rebuildDataTier tierDir s3Folder" 1>&2 ; exit 1 ; }
+tierDir="$1"
+s3Folder="$2"
+
+# Temp debug
+echo "rebuildDataTier called on $tierDir $s3Folder"
 
 # Build a new image to install everywhere
-/opt/dms-worker/conf/scripts/buildLatestImage
+/opt/dms-worker/conf/scripts/buildLatestImage "$s3Folder"
 
 SSH_FLAGS="-q -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 FLAGS="$SSH_FLAGS -i /var/opt/dms/.ssh/ld-user.pem"
