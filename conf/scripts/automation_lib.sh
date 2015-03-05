@@ -90,6 +90,7 @@ removeFromLB() {
             local instanceID=$( jq -r '.Instances[0].InstanceId' < $serverDir/aws-instance.json )
             echo "Removing from LB: $serverDir"
             aws elb deregister-instances-from-load-balancer --load-balancer-name $LBNAME --instances $instanceID
+            sleep 3
         else 
             echo "Could not find server instance information at $serverDir" 1>&2
             return 1
