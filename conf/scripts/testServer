@@ -1,2 +1,0 @@
-#!/bin/bash
-echo TestServer called on $1

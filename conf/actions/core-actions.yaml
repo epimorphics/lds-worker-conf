@@ -24,8 +24,3 @@
     "topicARN"   : "arn:aws:sns:eu-west-1:853478862498:worker_notifications"
     "target"     : "dms-worker error"
     "message"    : "Failure in rebuildDataTier"
----
-"@name"      : testTier
-"@type"      : script
-"@script"    : "testTier"
-"@args"      : [ "target" ]
