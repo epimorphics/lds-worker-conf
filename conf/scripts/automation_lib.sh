@@ -84,6 +84,7 @@ findLastDump() {
 # Usage: removeFromLB serverDir
 removeFromLB() {
     [[ $# = 1 ]] || { echo "Internal error calling removeFromLB" 1>&2 ; exit 1 ; }
+    local serverDir="$1"
     if [[ -f $serverDir/../../lb-name ]]; then
         local LBNAME=$(cat $serverDir/../../lb-name)
         if [[ -f $serverDir/aws-instance.json ]]; then
@@ -95,6 +96,8 @@ removeFromLB() {
             echo "Could not find server instance information at $serverDir" 1>&2
             return 1
         fi
+    else
+        echo "No load balancer"
     fi
 }
 
@@ -102,6 +105,7 @@ removeFromLB() {
 # Usage: addToLB serverDir
 addToLB() {
     [[ $# = 1 ]] || { echo "Internal error calling addToLB" 1>&2 ; exit 1 ; }
+    local serverDir="$1"
     if [[ -f $serverDir/../../lb-name ]]; then
         local LBNAME=$(cat $serverDir/../../lb-name)
         if [[ -f $serverDir/aws-instance.json ]]; then
@@ -112,6 +116,8 @@ addToLB() {
             echo "Could not find server instance information at $serverDir" 1>&2
             return 1
         fi
+    else
+        echo "No load balancer"
     fi
 }
 
@@ -130,4 +136,10 @@ applyToTier() {
             addToLB $server
         fi
     done
+}
+
+# Update the local copy of the server/LB information from S3
+updateServerInfo() {
+    cd /var/opt/dms
+    aws s3 cp --recursive  s3://dms-deploy/dms-state/ .
 }

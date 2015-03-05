@@ -12,14 +12,10 @@ s3Folder="$2"
 SCRIPTBASE=/opt/dms-worker/conf/scripts
 . $SCRIPTBASE/automation_lib.sh
 
-# Temp debug
-echo "rebuildDataTier called on $tierDir $s3Folder"
+updateServerInfo
 
 # Build a new image to install everywhere
 $SCRIPTBASE/buildLatestImage "$s3Folder"
-
-SSH_FLAGS="-q -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-FLAGS="$SSH_FLAGS -i /var/opt/dms/.ssh/lds-user.pem"
 
 # Scan all the servers in the tier and install
 applyToTier $tierDir $SCRIPTBASE/resetServerData

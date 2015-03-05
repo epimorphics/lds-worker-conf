@@ -1,0 +1,13 @@
+#!/bin/bash
+# Test applyToTier
+set -o errexit
+
+tierDir="$1"
+
+SCRIPTBASE=/opt/dms-worker/conf/scripts
+. $SCRIPTBASE/automation_lib.sh
+
+updateServerInfo
+
+# Scan all the servers in the tier and install
+applyToTier $tierDir $SCRIPTBASE/testServer
