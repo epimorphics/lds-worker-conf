@@ -36,5 +36,8 @@ tar czf DS-DB.tgz DS-DB ||  { echo "Failed to package image" 1>&2 ; exit 1 ; }
 echo "Uploading built image to: $image"
 aws s3 cp DS-DB.tgz "$image"  ||  { echo "Failed to upload image" 1>&2 ; exit 1 ; }
 
+# Check it is there and non-zero
+(( $(aws s3 ls "$image"  | awk '{print $3}') > 0 )) ||  { echo "Image didn't arrive" 1>&2 ; exit 1 ; }
+
 cd /tmp
 rm -r $buildir
