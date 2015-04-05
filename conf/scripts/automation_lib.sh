@@ -134,8 +134,9 @@ applyToTier() {
             removeFromLB $server
             sleep 10
             $command $server
-            sleep 10
+            sleep 5
             addToLB $server
+            sleep 10
         fi
     done
 }
