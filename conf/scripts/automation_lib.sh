@@ -132,7 +132,9 @@ applyToTier() {
     do
         if grep -qv Terminated $server/status ; then
             removeFromLB $server
+            sleep 10
             $command $server
+            sleep 10
             addToLB $server
         fi
     done
